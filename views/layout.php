@@ -11,7 +11,6 @@
 </head>
 
 <body>
-<<<<<<< HEAD
 
 
     <nav class="navbar navbar-expand-lg navbar-dark  bg-dark">
@@ -58,72 +57,6 @@
         </div>
 
     </nav>
-=======
-
-
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <!-- Botón colapsable para móviles -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Logo y nombre -->
-        <a class="navbar-brand" href="/app01_jmp/">
-            <img src="<?= asset('./images/cit.png') ?>" width="35" alt="cit" class="me-2">
-            Lista de Compras
-        </a>
-
-        <!-- Contenido del navbar -->
-        <div class="collapse navbar-collapse" id="navbarToggler">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-                <!-- Enlace a inicio -->
-                <li class="nav-item">
-                    <a class="nav-link" href="/app01_jmp">
-                        <i class="bi bi-house-fill me-2"></i>Inicio
-                    </a>
-                </li>
-
-                <!-- Enlace a productos -->
-                <li class="nav-item">
-                     <a class="nav-link" href="/app01_jmp/productos"><!-- ESTA PENDEINTE -->
-                        <i class="bi bi-list-check me-2"></i>Productos
-                    </a>
-                </li>
-
-                <!-- Enlace a categorías -->
-                <li class="nav-item">
-                    <a class="nav-link" href="/app01_jmp/categorias">
-                        <i class="bi bi-tags me-2"></i>Categorías
-                    </a>
-                </li>
-
-                <!-- Enlace a prioridades -->
-                <li class="nav-item">
-                    <a class="nav-link" href="/app01_jmp/prioridades">
-                        <i class="bi bi-exclamation-circle me-2"></i>Prioridades
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Botón de regreso o salida -->
-            <div class="d-grid">
-                <a href="/menu/" class="btn btn-danger">
-                    <i class="bi bi-arrow-bar-left"></i> Menú
-                </a>
-            </div>
-        </div>
-    </div>
-</nav>
-
-
-
-
-
-
->>>>>>> da1e1c3c8d987cb39a1817c7f2631c35cc978b21
     <div class="progress fixed-bottom" style="height: 6px;">
         <div class="progress-bar progress-bar-animated bg-danger" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
     </div>

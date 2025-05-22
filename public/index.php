@@ -22,7 +22,7 @@ $router->post('/categorias/guardarAPI', [CategoriaController::class, 'guardarAPI
 //renderiz<ar la pagina de PRoductos
 $router->get('/productos', [CategoriaController::class, 'renderizarPagina']);
 //avtivar eel gaurdar de categoriasw
-$router->post('/productos', [CategoriaController::class, 'guardarAPI']);
+$router->post('/productos/guardarAPI', [CategoriaController::class, 'guardarAPI']);
 
 // Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
 $router->comprobarRutas();
