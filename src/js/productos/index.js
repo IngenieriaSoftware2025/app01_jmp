@@ -1,3 +1,4 @@
+
 import Swal from "sweetalert2";
 
 const formulario = document.getElementById('FormProductos');
@@ -84,20 +85,37 @@ async function cargarProductos() {
     }
 }
 
+function agruparPorCategoria(productos) {
+    const agrupados = {};
+
+    productos.forEach(p => {
+        if (!agrupados[p.cat_nombre]) {
+            agrupados[p.cat_nombre] = [];
+        }
+        agrupados[p.cat_nombre].push(p);
+    });
+
+    Object.keys(agrupados).forEach(categoria => {
+        agrupados[categoria].sort((a, b) => {
+            const prioridades = { "Alta": 1, "Media": 2, "Baja": 3 };
+            return prioridades[a.pri_nombre] - prioridades[b.pri_nombre];
+        });
+    });
+
+    return agrupados;
+}
+
 function mostrarProductos(productos) {
     const porComprar = document.getElementById('productos-por-comprar');
     const comprados = document.getElementById('productos-comprados');
-    
-    // Separar productos
+
     const noComprados = productos.filter(p => p.comprado == 0);
     const siComprados = productos.filter(p => p.comprado == 1);
-    
-    // Agrupar por categoría
+
     const agrupados = agruparPorCategoria(noComprados);
-    
-    // Mostrar productos por comprar
     porComprar.innerHTML = '';
-    if(Object.keys(agrupados).length === 0) {
+
+    if (Object.keys(agrupados).length === 0) {
         porComprar.innerHTML = '<p class="text-muted text-center">No hay productos pendientes</p>';
     } else {
         Object.keys(agrupados).forEach(categoria => {
@@ -122,3 +140,50 @@ function mostrarProductos(productos) {
                                 </div>
                             </div>
                         </div>
+                    `).join('')}
+                </div>
+            `;
+            porComprar.appendChild(div);
+        });
+    }
+
+    comprados.innerHTML = '';
+    if (siComprados.length === 0) {
+        comprados.innerHTML = '<p class="text-muted text-center">No hay productos comprados</p>';
+    } else {
+        siComprados.forEach(producto => {
+            const div = document.createElement('div');
+            div.classList.add('col-md-6', 'col-lg-4', 'mb-3');
+            div.innerHTML = `
+                <div class="card border-left-secondary bg-light">
+                    <div class="card-body p-3">
+                        <h6 class="card-title"><del>${producto.prod_nombre}</del></h6>
+                        <p class="card-text">
+                            <small class="text-muted">Cantidad: ${producto.prod_cantidad}</small><br>
+                            <span class="badge bg-secondary">${producto.pri_nombre}</span>
+                        </p>
+                        <div class="btn-group btn-group-sm w-100">
+                            <button class="btn btn-secondary" onclick="marcarComprado(${producto.prod_id}, 0)">↩</button>
+                            <button class="btn btn-danger" onclick="eliminarProducto(${producto.prod_id})">✗</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            comprados.appendChild(div);
+        });
+    }
+}
+
+function limpiarFormulario() {
+    formulario.reset();
+    document.getElementById('prod_id').value = '';
+}
+
+function getPrioridadColor(prioridad) {
+    const colores = {
+        "Alta": "danger",
+        "Media": "warning",
+        "Baja": "success"
+    };
+    return colores[prioridad] || "secondary";
+}

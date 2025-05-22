@@ -1,91 +1,61 @@
 <?php
+
 namespace Controllers;
 
-use Model\ActiveRecord;
-use Model\Categorias;
 use MVC\Router;
+use Model\Categorias;
 
-class CategoriaController extends ActiveRecord
-{
-    public static function renderizarPagina(Router $router)
-    {
+class CategoriaController {
+
+    public static function index(Router $router) {
         $categorias = Categorias::all();
         $router->render('categorias/index', [
             'categorias' => $categorias
         ]);
     }
-    
+
     public static function guardarAPI() {
-        getHeadersApi();
-        
-        try {
-            $_POST['cat_nombre'] = trim($_POST['cat_nombre']);
-            
-            if(empty($_POST['cat_nombre'])) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'El nombre es obligatorio']);
-                return;
-            }
-            
-            // Verificar si ya existe
-            $existente = Categorias::where('cat_nombre', $_POST['cat_nombre']);
-            if($existente && (!isset($_POST['cat_id']) || $existente->cat_id != $_POST['cat_id'])) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Esta categoría ya existe']);
-                return;
-            }
-            
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $categoria = new Categorias($_POST);
-            
-            if(isset($_POST['cat_id']) && !empty($_POST['cat_id'])) {
-                $categoria->cat_id = $_POST['cat_id'];
-                $resultado = $categoria->actualizar();
-            } else {
-                $resultado = $categoria->crear();
-            }
-            
-            if($resultado['resultado']) {
-                echo json_encode(['resultado' => true, 'mensaje' => 'Categoría guardada exitosamente']);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Error al guardar la categoría']);
-            }
-            
-        } catch (Exception $e) {
-            echo json_encode(['resultado' => false, 'mensaje' => 'Error: ' . $e->getMessage()]);
-        }
-    }
-    
-    public static function eliminarAPI() {
-        getHeadersApi();
-        
-        try {
-            $id = $_POST['id'];
-            $categoria = Categorias::find($id);
-            
-            if(!$categoria) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Categoría no encontrada']);
+
+            if (!$categoria->cat_nombre) {
+                echo json_encode(['resultado' => false, 'mensaje' => 'El nombre de la categoría es obligatorio']);
                 return;
             }
-            
-            $resultado = $categoria->eliminar();
-            
-            if($resultado['resultado']) {
-                echo json_encode(['resultado' => true, 'mensaje' => 'Categoría eliminada exitosamente']);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Error al eliminar la categoría']);
+
+            // Evitar duplicados
+            $existe = Categorias::where('cat_nombre', $categoria->cat_nombre);
+            if ($existe) {
+                echo json_encode(['resultado' => false, 'mensaje' => 'La categoría ya existe']);
+                return;
             }
-            
-        } catch (Exception $e) {
-            echo json_encode(['resultado' => false, 'mensaje' => 'Error: ' . $e->getMessage()]);
+
+            $resultado = $categoria->guardar();
+            echo json_encode([
+                'resultado' => $resultado,
+                'mensaje' => $resultado ? 'Categoría registrada correctamente' : 'Error al guardar categoría'
+            ]);
         }
     }
-    
+
     public static function obtenerAPI() {
-        getHeadersApi();
-        
-        try {
-            $categorias = Categorias::all();
-            echo json_encode($categorias);
-        } catch (Exception $e) {
-            echo json_encode(['error' => 'Error al obtener categorías: ' . $e->getMessage()]);
+        $categorias = Categorias::all();
+        echo json_encode($categorias);
+    }
+
+    public static function eliminarAPI() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['cat_id'] ?? null;
+            if ($id) {
+                $categoria = Categorias::find($id);
+                $resultado = $categoria->eliminar();
+                echo json_encode([
+                    'resultado' => $resultado,
+                    'mensaje' => $resultado ? 'Categoría eliminada correctamente' : 'Error al eliminar categoría'
+                ]);
+            } else {
+                echo json_encode(['resultado' => false, 'mensaje' => 'ID no válido']);
+            }
         }
     }
 }
