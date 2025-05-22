@@ -17,4 +17,4 @@ class Prioridades extends ActiveRecord {
         $this->pri_id = $args['pri_id'] ?? null;
         $this->pri_nombre = $args['pri_nombre'] ?? '';
     }
-};
+}
