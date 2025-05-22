@@ -1,140 +1,105 @@
 <?php
+
 namespace Controllers;
 
-use Model\ActiveRecord;
+use MVC\Router;
 use Model\Productos;
 use Model\Categorias;
-use Model\Prioridades;
-use MVC\Router;
 
-class ProductoController extends ActiveRecord
-{
-    public static function renderizarPagina(Router $router)
-    {
-        $categorias = Categorias::all();
-        $prioridades = Prioridades::all();
-        $productos = Productos::allWithJoins();
-        
-        $router->render('productos/index', [
-            'categorias' => $categorias,
-            'prioridades' => $prioridades,
-            'productos' => $productos
-        ]);
+class ProductoController {
+
+
+
+    public static function renderizarPagina(Router $router) {
+        $router->render('productos/index', []);
     }
-    
-    public static function guardarAPI() {
-        getHeadersApi();
-        
-        try {
-            // Limpiar datos
-            $_POST['prod_nombre'] = trim($_POST['prod_nombre']);
-            $_POST['prod_cantidad'] = (int)$_POST['prod_cantidad'];
-            $_POST['cat_id'] = (int)$_POST['cat_id'];
-            $_POST['pri_id'] = (int)$_POST['pri_id'];
-            
-            // Validaciones
-            if(empty($_POST['prod_nombre'])) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'El nombre del producto es obligatorio']);
-                return;
-            }
-            
-            if($_POST['prod_cantidad'] <= 0) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'La cantidad debe ser mayor a 0']);
-                return;
-            }
-            
-            if($_POST['cat_id'] <= 0 || $_POST['pri_id'] <= 0) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Debe seleccionar categoría y prioridad']);
-                return;
-            }
-            
-            // Verificar duplicado
-            $existente = Productos::whereDuplicate($_POST['prod_nombre'], $_POST['cat_id']);
-            if($existente && (!isset($_POST['prod_id']) || $existente->prod_id != $_POST['prod_id'])) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Este producto ya existe en esta categoría']);
-                return;
-            }
-            
-            $producto = new Productos($_POST);
-            
-            if(isset($_POST['prod_id']) && !empty($_POST['prod_id'])) {
-                $producto->prod_id = $_POST['prod_id'];
-                $resultado = $producto->actualizar();
-            } else {
-                $resultado = $producto->crear();
-            }
-            
-            if($resultado['resultado']) {
-                echo json_encode(['resultado' => true, 'mensaje' => 'Producto guardado exitosamente']);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Error al guardar el producto']);
-            }
-            
-        } catch (Exception $e) {
-            echo json_encode(['resultado' => false, 'mensaje' => 'Error: ' . $e->getMessage()]);
-        }
-    }
-    
-    public static function marcarCompradoAPI() {
-        getHeadersApi();
-        
-        try {
-            $id = $_POST['id'];
-            $comprado = $_POST['comprado'];
-            
-            $producto = Productos::find($id);
-            if(!$producto) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Producto no encontrado']);
-                return;
-            }
-            
-            $producto->comprado = $comprado;
-            $resultado = $producto->actualizar();
-            
-            if($resultado['resultado']) {
-                echo json_encode(['resultado' => true, 'mensaje' => 'Estado actualizado']);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Error al actualizar']);
-            }
-            
-        } catch (Exception $e) {
-            echo json_encode(['resultado' => false, 'mensaje' => 'Error: ' . $e->getMessage()]);
-        }
-    }
-    
-    public static function eliminarAPI() {
-        getHeadersApi();
-        
-        try {
-            $id = $_POST['id'];
-            $producto = Productos::find($id);
-            
-            if(!$producto) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Producto no encontrado']);
-                return;
-            }
-            
-            $resultado = $producto->eliminar();
-            
-            if($resultado['resultado']) {
-                echo json_encode(['resultado' => true, 'mensaje' => 'Producto eliminado exitosamente']);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'Error al eliminar el producto']);
-            }
-            
-        } catch (Exception $e) {
-            echo json_encode(['resultado' => false, 'mensaje' => 'Error: ' . $e->getMessage()]);
-        }
-    }
-    
-    public static function obtenerAPI() {
-        getHeadersApi();
-        
-        try {
-            $productos = Productos::allWithJoins();
-            echo json_encode($productos);
-        } catch (Exception $e) {
-            echo json_encode(['error' => 'Error al obtener productos: ' . $e->getMessage()]);
-        }
-    }
+
+    // public static function guardarAPI() {
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $producto = new Productos($_POST);
+
+    //         // Validaciones mínimas
+    //         if (
+    //             !isset($producto->prod_nombre) || trim($producto->prod_nombre) === '' ||
+    //             !isset($producto->prod_cantidad) || $producto->prod_cantidad < 1 ||
+    //             !$producto->cat_id || !isset($producto->prod_prioridad) || trim($producto->prod_prioridad) === ''
+    //         ) {
+    //             echo json_encode(['resultado' => false, 'mensaje' => 'Todos los campos son obligatorios']);
+    //             return;
+    //         }
+
+    //         // Validar duplicado si es nuevo
+    //         if (empty($producto->prod_id)) {
+    //             $existe = Productos::whereMultiple([
+    //                 'prod_nombre' => $producto->prod_nombre,
+    //                 'cat_id' => $producto->cat_id
+    //             ]);
+
+    //             if ($existe) {
+    //                 echo json_encode(['resultado' => false, 'mensaje' => 'Ya existe un producto con ese nombre en esta categoría']);
+    //                 return;
+    //             }
+    //         }
+
+    //         $resultado = $producto->guardar();
+
+    //         echo json_encode([
+    //             'resultado' => $resultado,
+    //             'mensaje' => $resultado ? 'Producto guardado correctamente' : 'Error al guardar producto'
+    //         ]);
+    //     }
+    // }
+
+    // public static function obtenerAPI() {
+    //     $productos = Productos::consultarProductos();
+    //     echo json_encode($productos);
+    // }
+
+    // public static function eliminarAPI() {
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $id = $_POST['prod_id'] ?? null;
+    //         if ($id) {
+    //             $producto = Productos::find($id);
+
+    //             if (!$producto) {
+    //                 echo json_encode(['resultado' => false, 'mensaje' => 'Producto no encontrado']);
+    //                 return;
+    //             }
+
+    //             $resultado = $producto->eliminar();
+    //             echo json_encode([
+    //                 'resultado' => $resultado,
+    //                 'mensaje' => $resultado ? 'Producto eliminado correctamente' : 'Error al eliminar producto'
+    //             ]);
+    //         } else {
+    //             echo json_encode(['resultado' => false, 'mensaje' => 'ID no válido']);
+    //         }
+    //     }
+    // }
+
+    // public static function marcarAPI() {
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $id = $_POST['prod_id'] ?? null;
+    //         $valor = $_POST['valor'] ?? null;
+
+    //         if ($id !== null && $valor !== null) {
+    //             $producto = Productos::find($id);
+
+    //             if (!$producto) {
+    //                 echo json_encode(['resultado' => false, 'mensaje' => 'Producto no encontrado']);
+    //                 return;
+    //             }
+
+    //             $producto->comprado = $valor;
+    //             $resultado = $producto->guardar();
+
+    //             echo json_encode([
+    //                 'resultado' => $resultado,
+    //                 'mensaje' => $resultado ? 'Producto actualizado correctamente' : 'Error al actualizar producto'
+    //             ]);
+    //         } else {
+    //             echo json_encode(['resultado' => false, 'mensaje' => 'Datos incompletos']);
+    //         }
+    //     }
+    // }
 }

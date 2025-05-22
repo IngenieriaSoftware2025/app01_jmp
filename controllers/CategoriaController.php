@@ -14,48 +14,55 @@ class CategoriaController {
         ]);
     }
 
-    public static function guardarAPI() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $categoria = new Categorias($_POST);
+    // public static function guardarAPI() {
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $categoria = new Categorias($_POST);
 
-            if (!$categoria->cat_nombre) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'El nombre de la categoría es obligatorio']);
-                return;
-            }
+    //         if (!isset($categoria->cat_nombre) || trim($categoria->cat_nombre) === '') {
+    //             echo json_encode(['resultado' => false, 'mensaje' => 'El nombre de la categoría es obligatorio']);
+    //             return;
+    //         }
 
-            // Evitar duplicados
-            $existe = Categorias::where('cat_nombre', $categoria->cat_nombre);
-            if ($existe) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'La categoría ya existe']);
-                return;
-            }
+    //         // Verificar si ya existe
+    //         $existe = Categorias::where('cat_nombre', $categoria->cat_nombre);
+    //         if ($existe) {
+    //             echo json_encode(['resultado' => false, 'mensaje' => 'La categoría ya existe']);
+    //             return;
+    //         }
 
-            $resultado = $categoria->guardar();
-            echo json_encode([
-                'resultado' => $resultado,
-                'mensaje' => $resultado ? 'Categoría registrada correctamente' : 'Error al guardar categoría'
-            ]);
-        }
-    }
+    //         $resultado = $categoria->guardar();
 
-    public static function obtenerAPI() {
-        $categorias = Categorias::all();
-        echo json_encode($categorias);
-    }
+    //         echo json_encode([
+    //             'resultado' => $resultado,
+    //             'mensaje' => $resultado ? 'Categoría registrada correctamente' : 'Error al guardar categoría'
+    //         ]);
+    //     }
+    // }
 
-    public static function eliminarAPI() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['cat_id'] ?? null;
-            if ($id) {
-                $categoria = Categorias::find($id);
-                $resultado = $categoria->eliminar();
-                echo json_encode([
-                    'resultado' => $resultado,
-                    'mensaje' => $resultado ? 'Categoría eliminada correctamente' : 'Error al eliminar categoría'
-                ]);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'ID no válido']);
-            }
-        }
-    }
+    // public static function obtenerAPI() {
+    //     $categorias = Categorias::all();
+    //     echo json_encode($categorias);
+    // }
+
+    // public static function eliminarAPI() {
+    //     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    //         $id = $_POST['cat_id'] ?? null;
+    //         if ($id) {
+    //             $categoria = Categorias::find($id);
+
+    //             if (!$categoria) {
+    //                 echo json_encode(['resultado' => false, 'mensaje' => 'Categoría no encontrada']);
+    //                 return;
+    //             }
+
+    //             $resultado = $categoria->eliminar();
+    //             echo json_encode([
+    //                 'resultado' => $resultado,
+    //                 'mensaje' => $resultado ? 'Categoría eliminada correctamente' : 'Error al eliminar categoría'
+    //             ]);
+    //         } else {
+    //             echo json_encode(['resultado' => false, 'mensaje' => 'ID no válido']);
+    //         }
+    //     }
+    // }
 }

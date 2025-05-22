@@ -1,15 +1,16 @@
-<?php 
+<?php
 require_once __DIR__ . '/../includes/app.php';
 
-use Controllers\CategoriaController;
-use MVC\Router;
 use Controllers\AppController;
+use Controllers\CategoriaController;
 use Controllers\ProductoController;
+use MVC\Router;
 
 $router = new Router();
 $router->setBaseURL('/' . $_ENV['APP_NAME']);
 
-$router->get('/', [AppController::class,'index']);
+// RUTA INICIAL
+$router->get('/', [AppController::class, 'index']);
 
 // RUTAS PARA CATEGORÍAS
 $router->get('/categorias', [CategoriaController::class, 'renderizarPagina']);
@@ -21,8 +22,8 @@ $router->get('/categorias/obtenerAPI', [CategoriaController::class, 'obtenerAPI'
 $router->get('/productos', [ProductoController::class, 'renderizarPagina']);
 $router->post('/productos/guardarAPI', [ProductoController::class, 'guardarAPI']);
 $router->post('/productos/eliminarAPI', [ProductoController::class, 'eliminarAPI']);
-$router->post('/productos/marcarCompradoAPI', [ProductoController::class, 'marcarCompradoAPI']);
+$router->post('/productos/marcarCompradoAPI', [ProductoController::class, 'marcarAPI']);
 $router->get('/productos/obtenerAPI', [ProductoController::class, 'obtenerAPI']);
 
-// Comprueba y valida las rutas, que existan y les asigna las funciones del Controlador
+// VALIDAR RUTAS
 $router->comprobarRutas();
