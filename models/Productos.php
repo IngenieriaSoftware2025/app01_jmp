@@ -5,9 +5,17 @@ namespace Model;
 class Productos extends ActiveRecord {
     
     // CONFIGURACIÓN DE LA TABLA
-    protected static $tabla = 'productos';
-    protected static $columnasDB = ['prod_id', 'prod_nombre', 'prod_cantidad', 'cat_id', 'pri_id', 'comprado'];
-    protected static $idTabla = 'prod_id'; // CLAVE: Definir la clave primaria
+    public static $tabla = 'productos';
+    public static $columnasDB = [
+        'prod_id',
+        'prod_nombre',
+        'prod_cantidad',
+        'cat_id',
+        'pri_id',
+        'comprado'
+    ];
+    
+    public static $idTabla = 'prod_id';
 
     // PROPIEDADES DEL MODELO
     public $prod_id;
@@ -29,13 +37,10 @@ class Productos extends ActiveRecord {
         $this->comprado = $args['comprado'] ?? 0;
     }
     
-
     /**
      * CONSULTAR PRODUCTOS CON INFORMACIÓN DE CATEGORÍAS Y PRIORIDADES
-     * ADAPTADO PARA INFORMIX
      */
     public static function consultarProductos() {
-        // Sintaxis específica para Informix - usando aliases más explícitos
         $query = "SELECT 
                     p.prod_id,
                     p.prod_nombre,
@@ -50,44 +55,11 @@ class Productos extends ActiveRecord {
                   INNER JOIN prioridades pr ON p.pri_id = pr.pri_id
                   ORDER BY p.comprado ASC, pr.pri_id ASC, p.prod_nombre ASC";
 
-        // Usar el método fetchArray del ActiveRecord
         return self::fetchArray($query);
     }
 
     /**
-     * BUSCAR PRODUCTO POR MÚLTIPLES CONDICIONES
-     * ADAPTADO PARA INFORMIX - Manejo específico de comillas y sintaxis
-     */
-    public static function whereMultiple($conditions) {
-        
-        // Construir la consulta usando PDO compatible con Informix
-        $query = "SELECT * FROM " . static::$tabla . " WHERE ";
-        $clauses = [];
-        
-        foreach ($conditions as $field => $value) {
-            // Para Informix, asegurar el manejo correcto de strings
-            if (is_string($value)) {
-                $clauses[] = "$field = " . self::$db->quote(trim($value));
-            } else {
-                $clauses[] = "$field = " . self::$db->quote($value);
-            }
-        }
-        
-        $query .= implode(' AND ', $clauses);
-        
-        // En Informix, FIRST es equivalente a LIMIT en otros SGBD
-        $query .= " ORDER BY prod_id FIRST 1";
-        
-        // Usar consultarSQL del ActiveRecord
-        $resultado = self::consultarSQL($query);
-        
-        // Si hay resultados, devolver el primero
-        return !empty($resultado) ? $resultado[0] : false;
-    }
-
-    /**
-     * MÉTODO ALTERNATIVO PARA INFORMIX - Buscar duplicados
-     * Usando EXISTS que es más eficiente en Informix
+     * Verificar si ya existe un producto con el mismo nombre en la misma categoría
      */
     public static function existeProducto($nombre, $categoria_id) {
         $query = "SELECT COUNT(*) as total 
@@ -100,8 +72,7 @@ class Productos extends ActiveRecord {
     }
 
     /**
-     * OBTENER PRODUCTOS POR ESTADO - Método específico para la aplicación
-     * Separar comprados de no comprados
+     * OBTENER PRODUCTOS POR ESTADO - Comprados o no comprados
      */
     public static function obtenerPorEstado($comprado = 0) {
         $query = "SELECT 
@@ -123,8 +94,7 @@ class Productos extends ActiveRecord {
     }
 
     /**
-     * MÉTODO ESPECÍFICO PARA INFORMIX - Actualizar solo el campo comprado
-     * Más eficiente que actualizar todo el registro
+     * ACTUALIZAR SOLO EL CAMPO COMPRADO
      */
     public function actualizarEstadoComprado($nuevoEstado) {
         $query = "UPDATE " . static::$tabla . " 
@@ -141,15 +111,13 @@ class Productos extends ActiveRecord {
         return $resultado > 0;
     }
 
-    
-
     /**
      * VALIDACIONES PERSONALIZADAS
      */
     public function validar() {
         $errores = [];
 
-        // Validar nombre (trim para espacios en Informix)
+        // Validar nombre
         if (!$this->prod_nombre || trim($this->prod_nombre) === '') {
             $errores[] = 'El nombre del producto es obligatorio';
         }
@@ -173,8 +141,7 @@ class Productos extends ActiveRecord {
     }
 
     /**
-     * MÉTODO PARA LIMPIAR DATOS ANTES DE GUARDAR - Específico para Informix
-     * Informix es sensible a espacios y caracteres especiales
+     * LIMPIEZA DE DATOS ANTES DE GUARDAR
      */
     public function limpiarDatos() {
         $this->prod_nombre = trim($this->prod_nombre);

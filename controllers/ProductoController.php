@@ -6,172 +6,185 @@ use MVC\Router;
 use Model\Productos;
 use Model\Categorias;
 use Exception;
+use Model\ActiveRecord;
 
-class ProductoController {
-
-    /**
-     * RENDERIZAR PÁGINA PRINCIPAL DE PRODUCTOS
-     */
-    public static function renderizarPagina(Router $router) {
+class ProductoController extends ActiveRecord
+{
+    public function renderizarPagina(Router $router)
+    {
         $router->render('productos/index', []);
     }
 
-    /**
-     * GUARDAR O ACTUALIZAR PRODUCTO VIA API - ADAPTADO PARA INFORMIX
-     */
-    public static function guardarAPI() {
-        // Solo procesar si es POST
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            // Crear instancia del producto con los datos recibidos
-            $producto = new Productos($_POST);
-            
-            // LIMPIAR DATOS PARA INFORMIX
-            $producto->limpiarDatos();
+    public static function guardarAPI()
+    {
+        getHeadersApi();
 
-            // VALIDACIONES BÁSICAS
-            if (
-                !isset($producto->prod_nombre) || trim($producto->prod_nombre) === '' ||
-                !isset($producto->prod_cantidad) || $producto->prod_cantidad < 1 ||
-                !$producto->cat_id || 
-                !isset($producto->pri_id) || trim($producto->pri_id) === ''
-            ) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Validación del nombre
+            $_POST['prod_nombre'] = htmlspecialchars($_POST['prod_nombre']);
+            $nombre_length = strlen($_POST['prod_nombre']);
+
+            if ($nombre_length < 2) {
+                http_response_code(400);
                 echo json_encode([
-                    'resultado' => false, 
-                    'mensaje' => 'Todos los campos son obligatorios'
+                    'resultado' => false,
+                    'mensaje' => 'El nombre del producto debe tener al menos 2 caracteres'
                 ]);
                 return;
             }
 
-            // VALIDAR DUPLICADO SOLO SI ES NUEVO PRODUCTO - Método optimizado para Informix
-            if (empty($producto->prod_id)) {
-                $existe = Productos::existeProducto($producto->prod_nombre, $producto->cat_id);
+            // Validación de cantidad
+            $_POST['prod_cantidad'] = filter_var($_POST['prod_cantidad'], FILTER_VALIDATE_INT);
 
-                if ($existe) {
-                    echo json_encode([
-                        'resultado' => false, 
-                        'mensaje' => 'Ya existe un producto con ese nombre en esta categoría'
-                    ]);
-                    return;
-                }
+            if ($_POST['prod_cantidad'] < 1) {
+                http_response_code(400);
+                echo json_encode([
+                    'resultado' => false,
+                    'mensaje' => 'La cantidad debe ser mayor a 0'
+                ]);
+                return;
+            }
+
+            // Validar categoría y prioridad
+            $_POST['cat_id'] = filter_var($_POST['cat_id'], FILTER_VALIDATE_INT);
+            $_POST['pri_id'] = filter_var($_POST['pri_id'], FILTER_VALIDATE_INT);
+
+            // Verificar si el producto ya existe en la misma categoría
+            if (Productos::existeProducto($_POST['prod_nombre'], $_POST['cat_id'])) {
+                http_response_code(400);
+                echo json_encode([
+                    'resultado' => false,
+                    'mensaje' => 'Este producto ya existe en la categoría seleccionada'
+                ]);
+                return;
             }
 
             try {
-                // INTENTAR GUARDAR EL PRODUCTO
+                $producto = new Productos($_POST);
+                $producto->limpiarDatos(); // Limpieza adicional
+                
+                // Si no hay ID, es nuevo (comprado = 0)
+                if (empty($_POST['prod_id'])) {
+                    $producto->comprado = 0;
+                }
+                
                 $resultado = $producto->guardar();
 
-                // MANEJAR RESPUESTA DEL ACTIVERECORD (que devuelve array)
-                $exito = false;
-                if (is_array($resultado)) {
-                    $exito = $resultado['resultado'] > 0;
-                } else {
-                    $exito = $resultado;
-                }
-
-                // RESPONDER CON RESULTADO
                 echo json_encode([
-                    'resultado' => $exito,
-                    'mensaje' => $exito ? 'Producto guardado correctamente' : 'Error al guardar producto'
+                    'resultado' => true,
+                    'mensaje' => !empty($_POST['prod_id']) ? 
+                        'El producto ha sido actualizado correctamente' : 
+                        'El producto ha sido agregado correctamente'
                 ]);
-
+                
             } catch (Exception $e) {
-                // Manejo de errores específicos de Informix
+                http_response_code(400);
                 echo json_encode([
                     'resultado' => false,
-                    'mensaje' => 'Error de base de datos: ' . $e->getMessage()
+                    'mensaje' => 'Error al guardar el producto',
+                    'detalle' => $e->getMessage(),
                 ]);
             }
         }
     }
 
-    /**
-     * OBTENER TODOS LOS PRODUCTOS VIA API
-     */
-    public static function obtenerAPI() {
-        $productos = Productos::consultarProductos();
-        echo json_encode($productos);
+    public static function obtenerAPI()
+    {
+        try {
+            $productos = Productos::consultarProductos();
+            echo json_encode($productos);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode([
+                'resultado' => false,
+                'mensaje' => 'Error al obtener los productos',
+                'detalle' => $e->getMessage(),
+            ]);
+        }
     }
 
-    /**
-     * ELIMINAR PRODUCTO VIA API
-     */
-    public static function eliminarAPI() {
+    public static function eliminarAPI()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = filter_var($_POST['prod_id'], FILTER_VALIDATE_INT);
             
-            // Obtener ID del producto
-            $id = $_POST['prod_id'] ?? null;
-            
-            if ($id) {
-                // Buscar el producto usando el método find del ActiveRecord
-                $producto = Productos::find($id);
-
-                if (!$producto) {
-                    echo json_encode([
-                        'resultado' => false, 
-                        'mensaje' => 'Producto no encontrado'
-                    ]);
-                    return;
-                }
-
-                // Eliminar producto
-                $resultado = $producto->eliminar();
+            if (!$id) {
                 echo json_encode([
-                    'resultado' => $resultado > 0,
-                    'mensaje' => $resultado > 0 ? 'Producto eliminado correctamente' : 'Error al eliminar producto'
-                ]);
-                
-            } else {
-                echo json_encode([
-                    'resultado' => false, 
+                    'resultado' => false,
                     'mensaje' => 'ID no válido'
                 ]);
+                return;
             }
-        }
-    }
-
-    /**
-     * MARCAR PRODUCTO COMO COMPRADO/NO COMPRADO VIA API - OPTIMIZADO PARA INFORMIX
-     */
-    public static function marcarAPI() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
-            // Obtener datos
-            $id = $_POST['prod_id'] ?? null;
-            $valor = $_POST['valor'] ?? null;
-
-            if ($id !== null && $valor !== null) {
-                
-                // Buscar producto
+            try {
                 $producto = Productos::find($id);
-
+                
                 if (!$producto) {
                     echo json_encode([
-                        'resultado' => false, 
+                        'resultado' => false,
                         'mensaje' => 'Producto no encontrado'
                     ]);
                     return;
                 }
+                
+                $resultado = $producto->eliminar();
+                
+                echo json_encode([
+                    'resultado' => true,
+                    'mensaje' => 'El producto ha sido eliminado correctamente'
+                ]);
+                
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode([
+                    'resultado' => false,
+                    'mensaje' => 'Error al eliminar el producto',
+                    'detalle' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
 
-                try {
-                    // USAR MÉTODO OPTIMIZADO PARA INFORMIX
-                    $resultado = $producto->actualizarEstadoComprado($nuevoEstado);
-
-                    echo json_encode([
-                        'resultado' => $resultado,
-                        'mensaje' => $resultado ? 'Producto actualizado correctamente' : 'Error al actualizar producto'
-                    ]);
-
-                } catch (Exception $e) {
+    public static function marcarAPI()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = filter_var($_POST['prod_id'], FILTER_VALIDATE_INT);
+            $valor = filter_var($_POST['valor'], FILTER_VALIDATE_INT);
+            
+            if (!$id) {
+                echo json_encode([
+                    'resultado' => false,
+                    'mensaje' => 'ID no válido'
+                ]);
+                return;
+            }
+            
+            try {
+                $producto = Productos::find($id);
+                
+                if (!$producto) {
                     echo json_encode([
                         'resultado' => false,
-                        'mensaje' => 'Error de base de datos: ' . $e->getMessage()
+                        'mensaje' => 'Producto no encontrado'
                     ]);
+                    return;
                 }
                 
-            } else {
+                $resultado = $producto->actualizarEstadoComprado($valor);
+                
+                $mensaje = $valor == 1 ? 'Producto marcado como comprado' : 'Producto desmarcado como comprado';
+                
                 echo json_encode([
-                    'resultado' => false, 
-                    'mensaje' => 'Datos incompletos'
+                    'resultado' => true,
+                    'mensaje' => $mensaje
+                ]);
+                
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode([
+                    'resultado' => false,
+                    'mensaje' => 'Error al actualizar el estado del producto',
+                    'detalle' => $e->getMessage(),
                 ]);
             }
         }

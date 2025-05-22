@@ -18,23 +18,32 @@ class CategoriaController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $categoria = new Categorias($_POST);
 
-            if (!isset($categoria->cat_nombre) || trim($categoria->cat_nombre) === '') {
-                echo json_encode(['resultado' => false, 'mensaje' => 'El nombre de la categoría es obligatorio']);
+            // Validar
+            if (!isset($_POST['cat_nombre']) || trim($_POST['cat_nombre']) === '') {
+                echo json_encode([
+                    'resultado' => false, 
+                    'mensaje' => 'El nombre de la categoría es obligatorio'
+                ]);
                 return;
             }
 
             // Verificar si ya existe
             $existe = Categorias::where('cat_nombre', $categoria->cat_nombre);
-            if ($existe) {
-                echo json_encode(['resultado' => false, 'mensaje' => 'La categoría ya existe']);
+            if ($existe && !isset($_POST['cat_id'])) {
+                echo json_encode([
+                    'resultado' => false, 
+                    'mensaje' => 'La categoría ya existe'
+                ]);
                 return;
             }
 
             $resultado = $categoria->guardar();
 
             echo json_encode([
-                'resultado' => $resultado,
-                'mensaje' => $resultado ? 'Categoría registrada correctamente' : 'Error al guardar categoría'
+                'resultado' => true,
+                'mensaje' => isset($_POST['cat_id']) ? 
+                    'Categoría actualizada correctamente' : 
+                    'Categoría registrada correctamente'
             ]);
         }
     }
@@ -47,22 +56,30 @@ class CategoriaController {
     public static function eliminarAPI() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['cat_id'] ?? null;
-            if ($id) {
-                $categoria = Categorias::find($id);
-
-                if (!$categoria) {
-                    echo json_encode(['resultado' => false, 'mensaje' => 'Categoría no encontrada']);
-                    return;
-                }
-
-                $resultado = $categoria->eliminar();
+            
+            if (!$id) {
                 echo json_encode([
-                    'resultado' => $resultado,
-                    'mensaje' => $resultado ? 'Categoría eliminada correctamente' : 'Error al eliminar categoría'
+                    'resultado' => false, 
+                    'mensaje' => 'ID no válido'
                 ]);
-            } else {
-                echo json_encode(['resultado' => false, 'mensaje' => 'ID no válido']);
+                return;
             }
+
+            $categoria = Categorias::find($id);
+
+            if (!$categoria) {
+                echo json_encode([
+                    'resultado' => false, 
+                    'mensaje' => 'Categoría no encontrada'
+                ]);
+                return;
+            }
+
+            $resultado = $categoria->eliminar();
+            echo json_encode([
+                'resultado' => true,
+                'mensaje' => 'Categoría eliminada correctamente'
+            ]);
         }
     }
 }
