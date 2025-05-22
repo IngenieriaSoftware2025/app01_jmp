@@ -1,63 +1,103 @@
 <div class="container py-4">
-    <h2 class="text-center mb-4">Lista de Compras de María</h2>
-
-    <!-- Formulario -->
-    <div class="card mb-4">
-        <div class="card-header bg-success text-white">Agregar Producto</div>
-        <div class="card-body">
-
-
-            <form id="FormProductos">
-                <input type="hidden" id="prod_id" name="prod_id">
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="prod_nombre" class="form-label">Nombre del Producto</label>
-                        <input type="text" class="form-control" id="prod_nombre" name="prod_nombre" required>
+    <div class="row justify-content-center p-3">
+        <div class="col-lg-10">
+            <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #007bff;">
+                <div class="card-body p-3">
+                    <div class="row mb-3">
+                        <h5 class="text-center mb-2">¡Lista de Compras de María!</h5>
+                        <h4 class="text-center mb-2 text-primary">GESTIÓN DE PRODUCTOS</h4>
                     </div>
-                    <div class="col-md-6">
-                        <label for="prod_cantidad" class="form-label">Cantidad</label>
-                        <input type="number" class="form-control" id="prod_cantidad" name="prod_cantidad" min="1" required>
+
+                    <div class="row justify-content-center p-4 shadow-lg rounded">
+                        <form id="FormProductos">
+                            <input type="hidden" id="prod_id" name="prod_id">
+
+                            <div class="row mb-3 justify-content-center">
+                                <div class="col-lg-6">
+                                    <label for="prod_nombre" class="form-label">NOMBRE DEL PRODUCTO</label>
+                                    <input type="text" class="form-control" id="prod_nombre" name="prod_nombre" placeholder="Ej: Papel higiénico" required>
+                                </div>
+                                <div class="col-lg-6">
+                                    <label for="prod_cantidad" class="form-label">CANTIDAD</label>
+                                    <input type="number" class="form-control" id="prod_cantidad" name="prod_cantidad" min="1" value="1" placeholder="Ej: 3" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3 justify-content-center">
+                                <div class="col-lg-6">
+                                    <label for="cat_id" class="form-label">CATEGORÍA</label>
+                                    <select name="cat_id" class="form-select" id="cat_id" required>
+                                        <option value="" class="text-center"> -- SELECCIONE CATEGORÍA -- </option>
+                                        <!-- Se cargará dinámicamente con JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="col-lg-6">
+                                    <label for="pri_id" class="form-label">PRIORIDAD</label>
+                                    <select name="pri_id" class="form-select" id="pri_id" required>
+                                        <option value="" class="text-center"> -- SELECCIONE PRIORIDAD -- </option>
+                                        <option value="1">Alta</option>
+                                        <option value="2">Media</option>
+                                        <option value="3">Baja</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Campo oculto para 'comprado' por defecto -->
+                            <input type="hidden" name="comprado" value="0">
+
+                            <div class="row justify-content-center mt-4">
+                                <div class="col-auto">
+                                    <button class="btn btn-primary" type="submit" id="BtnGuardar">
+                                        <i class="bi bi-plus-circle me-1"></i>Guardar
+                                    </button>
+                                </div>
+
+                                <div class="col-auto">
+                                    <button class="btn btn-warning d-none" type="button" id="BtnModificar">
+                                        <i class="bi bi-pencil me-1"></i>Modificar
+                                    </button>
+                                </div>
+
+                                <div class="col-auto">
+                                    <button class="btn btn-secondary" type="reset" id="BtnLimpiar">
+                                        <i class="bi bi-x-circle me-1"></i>Limpiar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="cat_id" class="form-label">Categoría</label>
-                        <select class="form-select" id="cat_id" name="cat_id" required>
-                            <!-- opciones dinámicas -->
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="pri_id" class="form-label">Prioridad</label>
-                        <select class="form-select" id="pri_id" name="pri_id" required>
-                            <!-- opciones dinámicas -->
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Campo oculto para 'comprado' por defecto -->
-                <input type="hidden" name="comprado" value="0">
-
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success" id="BtnGuardar">Guardar</button>
-                    <button type="button" class="btn btn-warning" id="BtnModificar">Modificar</button>
-                    <button type="button" class="btn btn-secondary" id="BtnLimpiar">Limpiar</button>
-                </div>
-            </form>
-
+            </div>
         </div>
     </div>
 
     <!-- Productos por comprar -->
-    <div class="mb-5">
-        <h4 class="text-primary">📝 Por Comprar</h4>
-        <div class="row" id="productos-por-comprar"></div>
+    <div class="row justify-content-center p-3">
+        <div class="col-lg-10">
+            <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #007bff;">
+                <div class="card-body p-3">
+                    <h3 class="text-center">PRODUCTOS POR COMPRAR</h3>
+                    <div id="productos-por-comprar">
+                        <!-- Se cargarán dinámicamente con JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Productos comprados -->
-    <div class="mb-5">
-        <h4 class="text-success">✅ Comprados</h4>
-        <div class="row" id="productos-comprados"></div>
+    <div class="row justify-content-center p-3">
+        <div class="col-lg-10">
+            <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #007bff;">
+                <div class="card-body p-3">
+                    <h3 class="text-center">PRODUCTOS COMPRADOS</h3>
+                    <div id="productos-comprados">
+                        <!-- Se cargarán dinámicamente con JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script src="<?= asset('build/js/productos/index.js'); ?>"></script>

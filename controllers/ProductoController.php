@@ -4,7 +4,7 @@ namespace Controllers;
 
 use MVC\Router;
 use Model\Productos;
-use Model\Categorias;
+//use Model\Categorias;
 use Exception;
 use Model\ActiveRecord;
 
@@ -15,79 +15,67 @@ class ProductoController extends ActiveRecord
         $router->render('productos/index', []);
     }
 
-    public static function guardarAPI()
-    {
-        getHeadersApi();
+public static function guardarAPI()
+{
+    getHeadersApi();
+    
+    // Registrar datos recibidos
+    error_log("POST data: " . print_r($_POST, true));
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Validación del nombre
-            $_POST['prod_nombre'] = htmlspecialchars($_POST['prod_nombre']);
-            $nombre_length = strlen($_POST['prod_nombre']);
-
-            if ($nombre_length < 2) {
-                http_response_code(400);
-                echo json_encode([
-                    'resultado' => false,
-                    'mensaje' => 'El nombre del producto debe tener al menos 2 caracteres'
-                ]);
-                return;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Validaciones...
+        
+        try {
+            $producto = new Productos($_POST);
+            $producto->limpiarDatos();
+            
+            // Registrar datos del producto antes de guardar
+            error_log("Producto antes de guardar: " . print_r($producto, true));
+            
+            // Si no hay ID, es nuevo (comprado = 0)
+            if (empty($_POST['prod_id'])) {
+                $producto->comprado = 0;
             }
-
-            // Validación de cantidad
-            $_POST['prod_cantidad'] = filter_var($_POST['prod_cantidad'], FILTER_VALIDATE_INT);
-
-            if ($_POST['prod_cantidad'] < 1) {
-                http_response_code(400);
-                echo json_encode([
-                    'resultado' => false,
-                    'mensaje' => 'La cantidad debe ser mayor a 0'
-                ]);
-                return;
-            }
-
-            // Validar categoría y prioridad
-            $_POST['cat_id'] = filter_var($_POST['cat_id'], FILTER_VALIDATE_INT);
-            $_POST['pri_id'] = filter_var($_POST['pri_id'], FILTER_VALIDATE_INT);
-
-            // Verificar si el producto ya existe en la misma categoría
-            if (Productos::existeProducto($_POST['prod_nombre'], $_POST['cat_id'])) {
-                http_response_code(400);
-                echo json_encode([
-                    'resultado' => false,
-                    'mensaje' => 'Este producto ya existe en la categoría seleccionada'
-                ]);
-                return;
-            }
-
-            try {
-                $producto = new Productos($_POST);
-                $producto->limpiarDatos(); // Limpieza adicional
-                
-                // Si no hay ID, es nuevo (comprado = 0)
-                if (empty($_POST['prod_id'])) {
-                    $producto->comprado = 0;
-                }
-                
-                $resultado = $producto->guardar();
-
-                echo json_encode([
-                    'resultado' => true,
-                    'mensaje' => !empty($_POST['prod_id']) ? 
-                        'El producto ha sido actualizado correctamente' : 
-                        'El producto ha sido agregado correctamente'
-                ]);
-                
-            } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode([
-                    'resultado' => false,
-                    'mensaje' => 'Error al guardar el producto',
-                    'detalle' => $e->getMessage(),
-                ]);
-            }
+            
+            // Guardar y registrar resultado
+            $resultado = $producto->guardar();
+            error_log("Resultado de guardar: " . print_r($resultado, true));
+            
+            // Registrar el producto después de guardar
+            error_log("Producto después de guardar: " . print_r($producto, true));
+            
+            // Hacer una consulta independiente para verificar si se guardó
+            $sql = "SELECT * FROM productos WHERE prod_nombre = '" . 
+                    addslashes($producto->prod_nombre) . "' ORDER BY prod_id DESC LIMIT 1";
+            $resultado_consulta = self::fetchFirst($sql);
+            error_log("Consulta de verificación: " . print_r($resultado_consulta, true));
+            
+            echo json_encode([
+                'resultado' => true,
+                'mensaje' => !empty($_POST['prod_id']) ?
+                    'El producto ha sido actualizado correctamente' :
+                    'El producto ha sido agregado correctamente',
+                'id' => $producto->prod_id,
+                'debug' => [
+                    'post' => $_POST,
+                    'producto' => $producto,
+                    'resultado_guardar' => $resultado,
+                    'consulta_verificacion' => $resultado_consulta
+                ]
+            ]);
+            
+        } catch (Exception $e) {
+            error_log("Excepción al guardar: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            http_response_code(400);
+            echo json_encode([
+                'resultado' => false,
+                'mensaje' => 'Error al guardar el producto',
+                'detalle' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
-
+}
     public static function obtenerAPI()
     {
         try {
@@ -107,7 +95,7 @@ class ProductoController extends ActiveRecord
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = filter_var($_POST['prod_id'], FILTER_VALIDATE_INT);
-            
+
             if (!$id) {
                 echo json_encode([
                     'resultado' => false,
@@ -115,10 +103,10 @@ class ProductoController extends ActiveRecord
                 ]);
                 return;
             }
-            
+
             try {
                 $producto = Productos::find($id);
-                
+
                 if (!$producto) {
                     echo json_encode([
                         'resultado' => false,
@@ -126,14 +114,13 @@ class ProductoController extends ActiveRecord
                     ]);
                     return;
                 }
-                
+
                 $resultado = $producto->eliminar();
-                
+
                 echo json_encode([
                     'resultado' => true,
                     'mensaje' => 'El producto ha sido eliminado correctamente'
                 ]);
-                
             } catch (Exception $e) {
                 http_response_code(400);
                 echo json_encode([
@@ -150,7 +137,7 @@ class ProductoController extends ActiveRecord
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = filter_var($_POST['prod_id'], FILTER_VALIDATE_INT);
             $valor = filter_var($_POST['valor'], FILTER_VALIDATE_INT);
-            
+
             if (!$id) {
                 echo json_encode([
                     'resultado' => false,
@@ -158,10 +145,11 @@ class ProductoController extends ActiveRecord
                 ]);
                 return;
             }
-            
+
             try {
+                // Obtenemos el producto
                 $producto = Productos::find($id);
-                
+
                 if (!$producto) {
                     echo json_encode([
                         'resultado' => false,
@@ -169,16 +157,19 @@ class ProductoController extends ActiveRecord
                     ]);
                     return;
                 }
-                
-                $resultado = $producto->actualizarEstadoComprado($valor);
-                
+
+                // Actualizamos el estado usando sincronizar
+                $producto->sincronizar([
+                    'comprado' => $valor
+                ]);
+                $resultado = $producto->guardar();
+
                 $mensaje = $valor == 1 ? 'Producto marcado como comprado' : 'Producto desmarcado como comprado';
-                
+
                 echo json_encode([
                     'resultado' => true,
                     'mensaje' => $mensaje
                 ]);
-                
             } catch (Exception $e) {
                 http_response_code(400);
                 echo json_encode([
