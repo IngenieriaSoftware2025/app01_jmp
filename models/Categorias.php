@@ -5,12 +5,11 @@ namespace Model;
 class Categorias extends ActiveRecord {
     public static $tabla = 'categorias';
     public static $columnasDB = [
-        'cat_id', 
-        'cat_nombre', 
+        'cat_nombre'
 
     ];
 
-    public static $idTabla = 'prod_id';
+    public static $idTabla = 'cat_id';
     public $cat_id;
     public $cat_nombre;
 
