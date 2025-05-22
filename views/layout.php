@@ -29,11 +29,11 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0" style="margin: 0;">
                     <!-- NAV DE PRODUCTOS -->
                 <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="/app01_jmp/productos/"><i class="bi bi-house-fill me-2"></i>Productos</a>
+                        <a class="nav-link" aria-current="page" href="/app01_jmp/productos"><i class="bi bi-house-fill me-2"></i>Productos</a>
                 </li>
                 <!-- NAV DE CATEGORIA -->
                 <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="/app01_jmp/categorias/"><i class="bi bi-house-fill me-2"></i>Categorias</a>
+                        <a class="nav-link" aria-current="page" href="/app01_jmp/categorias"><i class="bi bi-house-fill me-2"></i>Categorias</a>
                 </li>
                         <ul class="dropdown-menu  dropdown-menu-dark " id="dropwdownRevision" style="margin: 0;">
                             <!-- <h6 class="dropdown-header">Información</h6> -->
