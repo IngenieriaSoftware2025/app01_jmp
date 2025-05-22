@@ -22,7 +22,7 @@
         </button>
 
         <!-- Logo y nombre -->
-        <a class="navbar-brand" href="/app01_JMP/">
+        <a class="navbar-brand" href="/app01_jmp/">
             <img src="<?= asset('./images/cit.png') ?>" width="35" alt="cit" class="me-2">
             Lista de Compras
         </a>
@@ -33,28 +33,28 @@
 
                 <!-- Enlace a inicio -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/app01_JMP/productos">
+                    <a class="nav-link" href="/app01_jmp">
                         <i class="bi bi-house-fill me-2"></i>Inicio
                     </a>
                 </li>
 
                 <!-- Enlace a productos -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/app01_JMP/views/templates/productos/index.php">
+                     <a class="nav-link" href="/app01_jmp/productos"><!-- ESTA PENDEINTE -->
                         <i class="bi bi-list-check me-2"></i>Productos
                     </a>
                 </li>
 
                 <!-- Enlace a categorías -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/app01_JMP/views/templates/categorias/index.php">
+                    <a class="nav-link" href="/app01_jmp/categorias">
                         <i class="bi bi-tags me-2"></i>Categorías
                     </a>
                 </li>
 
                 <!-- Enlace a prioridades -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/app01_JMP/views/templates/prioridades/index.php">
+                    <a class="nav-link" href="/app01_jmp/prioridades">
                         <i class="bi bi-exclamation-circle me-2"></i>Prioridades
                     </a>
                 </li>
