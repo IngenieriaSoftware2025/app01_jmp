@@ -1,86 +1,91 @@
-<div class="row justify-content-center p-3">
-    <div class="col-lg-10">
-        <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #007bff;">
-            <div class="card-body p-3">
-                <div class="row mb-3">
-                    <h5 class="text-center mb-2">¡Bienvenido a la Aplicación para organizar las compras del hogar!</h5>
-                    <h4 class="text-center mb-2 text-primary">MANIPULACION DE PRODUCTOS</h4>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center my-4">🛒 Lista de Compras de María</h2>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>➕ Agregar Producto</h5>
                 </div>
-
-                <div class="row justify-content-center p-5 shadow-lg">
-
+                <div class="card-body">
                     <form id="FormProductos">
                         <input type="hidden" id="prod_id" name="prod_id">
 
-                        <div class="row mb-3 justify-content-center">
-                            <!-- NOMBRE -->
-                            <div class="col-lg-6">
-                                <label for="prod_nombre" class="form-label">INGRESE NOMBRE DEL PRODUCTO</label>
-                                <input type="text" class="form-control" id="prod_nombre" name="prod_nombre" placeholder="ingrese aca el nombre del producto">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="prod_nombre" class="form-label">Nombre del Producto</label>
+                                <input type="text" class="form-control" id="prod_nombre" name="prod_nombre" required>
                             </div>
-                            <!-- CANTIDAD -->
-                            <div class="col-lg-6">
-                                <label for="prod_cantidad" class="form-label">INGRESE LA CANTIDAD DEL PRODUCTO</label>
-                                <input type="number" class="form-control" id="prod_cantidad" name="prod_cantidad" placeholder="Ingrese aca la cantidad del producto">
-                            </div>
-                            <!-- CATEGORIA -->
-                            <div class="col-lg-6">
-                                <label for="cat_id" class="form-label">INGRESE LA CANTEGORIA DEL PRODUCTO</label>
-                                <input type="number" class="form-control" id="cat_id" name="cat_id" placeholder="Ingrese aca la categoria del producto">
-                            </div>
-                            <!-- PRIORIDAD -->
-                            <div class="col-lg-6">
-                                <label for="pri_id" class="form-label">INGRESE LA PRIORIDAD DEL PRODUCTO</label>
-                                <input type="number" class="form-control" id="pri_id" name="pri_id" placeholder="Ingrese aca la prioridad del producto">
-                            </div>
-                            <!-- COMPRADO -->
-                            <div class="col-lg-6">
-                                <label for="comprado" class="form-label">COMPRADO</label>
-                                <input type="number" class="form-control" id="comprado" name="comprado" placeholder="Ingrese aca sus apellidos">
+                            <div class="col-md-6 mb-3">
+                                <label for="prod_cantidad" class="form-label">Cantidad</label>
+                                <input type="number" class="form-control" id="prod_cantidad" name="prod_cantidad" min="1" value="1" required>
                             </div>
                         </div>
 
-
-                        <div class="row justify-content-center mt-5">
-                            <div class="col-auto">
-                                <button class="btn btn-success" type="submit" id="BtnGuardar">
-                                    Guardar
-                                </button>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cat_id" class="form-label">Categoría</label>
+                                <select class="form-control" id="cat_id" name="cat_id" required>
+                                    <option value="">Seleccione una categoría</option>
+                                    <?php foreach($categorias as $categoria): ?>
+                                        <option value="<?php echo $categoria->cat_id; ?>"><?php echo $categoria->cat_nombre; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
-
-                            <div class="col-auto ">
-                                <button class="btn btn-warning d-none" type="button" id="BtnModificar">
-                                    Modificar
-                                </button>
+                            <div class="col-md-6 mb-3">
+                                <label for="pri_id" class="form-label">Prioridad</label>
+                                <select class="form-control" id="pri_id" name="pri_id" required>
+                                    <option value="">Seleccione prioridad</option>
+                                    <?php foreach($prioridades as $prioridad): ?>
+                                        <option value="<?php echo $prioridad->pri_id; ?>"><?php echo $prioridad->pri_nombre; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
+                        </div>
 
-                            <div class="col-auto">
-                                <button class="btn btn-secondary" type="reset" id="BtnLimpiar">
-                                    Limpiar
-                                </button>
-                            </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success" id="BtnGuardar">Guardar</button>
+                            <button type="button" class="btn btn-warning d-none" id="BtnModificar">Modificar</button>
+                            <button type="reset" class="btn btn-secondary" id="BtnLimpiar">Limpiar</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row justify-content-center p-3">
-    <div class="col-lg-10">
-        <div class="card custom-card shadow-lg" style="border-radius: 10px; border: 1px solid #007bff;">
-            <div class="card-body p-3">
-                <h3 class="text-center">USUARIOS REGISTRADOS PRODUCTOS ANOTADOS EN EL CUADERNO DIGITAL</h3>
-
-                <div class="table-responsive p-2">
-                    <table class="table table-striped table-hover table-bordered w-100 table-sm" id="TableProductos">
-                    </table>
+    <!-- Lista de Productos por Comprar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5>📋 Productos por Comprar</h5>
                 </div>
+                <div class="card-body" id="productos-por-comprar">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Lista de Productos Comprados -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5>✅ Productos Comprados</h5>
+                </div>
+                <div class="card-body" id="productos-comprados">
+                    <!-- Se llenará dinámicamente -->
+                </div>
             </div>
         </div>
     </div>
 </div>
-</div>
+
 <script src="<?= asset('build/js/productos/index.js') ?>"></script>
