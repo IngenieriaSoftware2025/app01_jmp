@@ -30,12 +30,4 @@ class Categorias extends ActiveRecord {
         
         return $errores;
     }
-    
-    /**
-     * Obtener todas las categorías ordenadas por nombre
-     */
-    public static function obtenerTodas() {
-        $query = "SELECT * FROM " . static::$tabla . " ORDER BY cat_nombre ASC";
-        return self::consultarSQL($query);
-    }
 }
