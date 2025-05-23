@@ -443,16 +443,14 @@ window.marcarComprado = async function(id, valor) {
 };
 
 // ELIMINAR PRODUCTO
+// ELIMINAR PRODUCTO
 window.eliminarProducto = async function(id) {
     try {
-        // Pedir confirmación
         const confirmacion = await Swal.fire({
             title: '¿Estás seguro?',
             text: "Esta acción no se puede deshacer",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         });
@@ -461,44 +459,59 @@ window.eliminarProducto = async function(id) {
             return;
         }
         
-        const datos = new FormData();
-        datos.append('prod_id', id);
-        
-        // Mostrar indicador de carga
+        // Mostrar cargando
         Swal.fire({
             title: 'Eliminando...',
+            text: 'Por favor espere',
             allowOutsideClick: false,
-            showConfirmButton: false,
-            willOpen: () => {
+            didOpen: () => {
                 Swal.showLoading();
             }
         });
+
+        // Imprimir datos para depuración
+        console.log('ID a eliminar:', id);
         
-        const respuesta = await fetch('/app01_jmp/productos/eliminarAPI', {
-            method: 'POST',
-            body: datos
+        // Intentar hacer una petición GET directa con el ID en la URL
+        const respuesta = await fetch(`/app01_jmp/productos/eliminar?prod_id=${id}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
         });
         
-        if (!respuesta.ok) {
-            throw new Error(`Error HTTP: ${respuesta.status}`);
-        }
+        // Imprimir respuesta para depuración
+        console.log('Status:', respuesta.status);
+        console.log('Content-Type:', respuesta.headers.get('content-type'));
         
-        const resultado = await respuesta.json();
+        // Obtener texto de respuesta para diagnóstico
+        const textoRespuesta = await respuesta.text();
+        console.log('Respuesta texto completo:', textoRespuesta);
         
-        // Cerrar indicador de carga
-        Swal.close();
-        
-        if (resultado.resultado) {
-            Swal.fire('Eliminado', resultado.mensaje, 'success');
-            cargarProductos();
-        } else {
-            Swal.fire('Error', resultado.mensaje, 'error');
+        // Intentar parsear como JSON
+        let resultado;
+        try {
+            resultado = JSON.parse(textoRespuesta);
+            
+            // Procesar respuesta JSON
+            Swal.close();
+            
+            if (resultado.resultado || resultado.codigo === 1) {
+                Swal.fire('Eliminado', resultado.mensaje, 'success');
+                cargarProductos();
+            } else {
+                Swal.fire('Error', resultado.mensaje || 'No se pudo eliminar el producto', 'error');
+            }
+        } catch (e) {
+            console.error('Error al parsear JSON:', e);
+            Swal.fire('Error', 'La respuesta del servidor no es JSON válido', 'error');
         }
     } catch (error) {
-        console.error('Error al eliminar producto:', error);
-        Swal.fire('Error', 'No se pudo eliminar el producto', 'error');
+        console.error('Error completo:', error);
+        Swal.fire('Error', 'No se pudo eliminar el producto: ' + error.message, 'error');
     }
 };
+
 
 // LIMPIAR FORMULARIO
 function limpiarFormulario() {

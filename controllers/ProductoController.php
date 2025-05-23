@@ -130,42 +130,42 @@ class ProductoController
 
     public static function eliminarAPI()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = filter_var($_POST['prod_id'], FILTER_VALIDATE_INT);
+        // Establecer encabezados para JSON
+        header('Content-Type: application/json');
 
-            if (!$id) {
-                echo json_encode([
-                    'resultado' => false,
-                    'mensaje' => 'ID no válido'
-                ]);
+        // Verificar que se haya enviado el ID (por GET)
+        if (!isset($_GET['prod_id'])) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'ID no proporcionado']);
+            return;
+        }
+
+        $id = filter_var($_GET['prod_id'], FILTER_VALIDATE_INT);
+
+        if (!$id) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'ID no válido']);
+            return;
+        }
+
+        try {
+            $producto = Productos::find($id);
+
+            if (!$producto) {
+                echo json_encode(['resultado' => false, 'mensaje' => 'Producto no encontrado']);
                 return;
             }
 
-            try {
-                $producto = Productos::find($id);
+            $resultado = $producto->eliminar();
 
-                if (!$producto) {
-                    echo json_encode([
-                        'resultado' => false,
-                        'mensaje' => 'Producto no encontrado'
-                    ]);
-                    return;
-                }
-
-                $resultado = $producto->eliminar();
-
-                echo json_encode([
-                    'resultado' => true,
-                    'mensaje' => 'El producto ha sido eliminado correctamente'
-                ]);
-            } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode([
-                    'resultado' => false,
-                    'mensaje' => 'Error al eliminar el producto',
-                    'detalle' => $e->getMessage(),
-                ]);
-            }
+            echo json_encode([
+                'resultado' => true,
+                'mensaje' => 'El producto ha sido eliminado correctamente'
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'resultado' => false,
+                'mensaje' => 'Error al eliminar el producto',
+                'detalle' => $e->getMessage()
+            ]);
         }
     }
 

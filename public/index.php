@@ -21,7 +21,7 @@ $router->get('/categorias/obtenerAPI', [CategoriaController::class, 'obtenerAPI'
 // RUTAS PARA PRODUCTOS
 $router->get('/productos', [ProductoController::class, 'renderizarPagina']);
 $router->post('/productos/guardarAPI', [ProductoController::class, 'guardarAPI']);
-$router->post('/productos/eliminarAPI', [ProductoController::class, 'eliminarAPI']);
+$router->get('/productos/eliminar', [ProductoController::class, 'eliminarAPI']);
 $router->post('/productos/marcarCompradoAPI', [ProductoController::class, 'marcarAPI']);
 $router->get('/productos/obtenerAPI', [ProductoController::class, 'obtenerAPI']);
 
