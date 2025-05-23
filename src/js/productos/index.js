@@ -31,23 +31,34 @@ function configurarEventos() {
 // GUARDAR PRODUCTO
 // En src/js/productos/index.js
 async function guardarProducto() {
-    // Validar formulario...
-    
-    const datos = new FormData(formulario);
-    
     try {
-        console.log('Enviando datos:', Object.fromEntries(datos));
+        // Recoger datos del formulario
+        const datos = new FormData(formulario);
         
+        // Enviar la solicitud
         const respuesta = await fetch('/app01_jmp/productos/guardarAPI', {
             method: 'POST',
             body: datos
         });
         
-        const resultado = await respuesta.json();
-        console.log('Respuesta recibida:', resultado);
+        // Comprobar si la respuesta es válida
+        if (!respuesta.ok) {
+            throw new Error(`Error HTTP: ${respuesta.status}`);
+        }
         
+        // Intentar parsear la respuesta como JSON
+        let resultado;
+        try {
+            resultado = await respuesta.json();
+        } catch (jsonError) {
+            // Si hay un error al parsear JSON, mostrar el texto de la respuesta
+            const textoRespuesta = await respuesta.text();
+            console.error('Error parseando JSON:', textoRespuesta);
+            throw new Error('La respuesta del servidor no es un JSON válido');
+        }
+        
+        // Procesar la respuesta JSON
         if (resultado.resultado) {
-            console.log('ID recibido:', resultado.id);
             Swal.fire({
                 icon: 'success',
                 title: 'Éxito',
@@ -57,19 +68,18 @@ async function guardarProducto() {
             limpiarFormulario();
             cargarProductos();
         } else {
-            console.error('Error al guardar:', resultado.mensaje);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: resultado.mensaje
+                text: resultado.mensaje || 'Error desconocido'
             });
         }
     } catch (error) {
-        console.error('Error en la petición:', error);
+        console.error('Error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Ocurrió un error al procesar la solicitud'
+            text: 'Ocurrió un error al procesar la solicitud: ' + error.message
         });
     }
 }
