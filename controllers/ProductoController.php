@@ -7,7 +7,6 @@ use Model\Productos;
 use Exception;
 use PDO;
 
-// Elimina esta herencia - los controladores NO deben extender de ActiveRecord
 class ProductoController
 {
     public static function renderizarPagina(Router $router)
@@ -35,22 +34,19 @@ class ProductoController
             echo json_encode(['resultado' => false, 'mensaje' => 'El nombre del producto es obligatorio']);
             return;
         }
-
         if ($prod_cantidad < 1) {
             echo json_encode(['resultado' => false, 'mensaje' => 'La cantidad debe ser mayor a 0']);
             return;
         }
-
         if ($cat_id < 1) {
             echo json_encode(['resultado' => false, 'mensaje' => 'Debe seleccionar una categoría']);
             return;
         }
-
         if ($pri_id < 1) {
             echo json_encode(['resultado' => false, 'mensaje' => 'Debe seleccionar una prioridad']);
             return;
         }
-
+        
         try {
             // Verificar si es una actualización
             if (isset($_POST['prod_id']) && !empty($_POST['prod_id'])) {

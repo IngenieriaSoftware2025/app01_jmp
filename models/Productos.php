@@ -25,9 +25,7 @@ class Productos extends ActiveRecord {
     public $pri_id;
     public $comprado;
 
-    /**
-     * CONSTRUCTOR - INICIALIZAR PROPIEDADES
-     */
+    //CONSTRUCTOR - INICIALIZAR PROPIEDADES
     public function __construct($args = []) {
         $this->prod_id = $args['prod_id'] ?? null;
         $this->prod_nombre = $args['prod_nombre'] ?? '';
@@ -37,9 +35,7 @@ class Productos extends ActiveRecord {
         $this->comprado = $args['comprado'] ?? 0;
     }
     
-    /**
-     * CONSULTAR PRODUCTOS CON INFORMACIÓN DE CATEGORÍAS Y PRIORIDADES
-     */
+    //CONSULTAR PRODUCTOS CON INFORMACIÓN DE CATEGORÍAS Y PRIORIDADES
     public static function consultarProductos() {
         $query = "SELECT 
                     p.prod_id,
@@ -58,9 +54,7 @@ class Productos extends ActiveRecord {
         return self::fetchArray($query);
     }
 
-    /**
-     * Verificar si ya existe un producto con el mismo nombre en la misma categoría
-     */
+    //Verificar si ya existe un producto con el mismo nombre en la misma categoría
     public static function existeProducto($nombre, $categoria_id) {
         $query = "SELECT COUNT(*) as total 
                   FROM " . static::$tabla . " 
@@ -71,9 +65,7 @@ class Productos extends ActiveRecord {
         return $resultado && $resultado['total'] > 0;
     }
 
-    /**
-     * OBTENER PRODUCTOS POR ESTADO - Comprados o no comprados
-     */
+    //OBTENER PRODUCTOS POR ESTADO - Comprados o no comprados
     public static function obtenerPorEstado($comprado = 0) {
         $query = "SELECT 
                     p.prod_id,
@@ -93,9 +85,7 @@ class Productos extends ActiveRecord {
         return self::fetchArray($query);
     }
 
-    /**
-     * ACTUALIZAR SOLO EL CAMPO COMPRADO
-     */
+    //ACTUALIZAR SOLO EL CAMPO COMPRADO
     public function actualizarEstadoComprado($nuevoEstado) {
         $query = "UPDATE " . static::$tabla . " 
                   SET comprado = " . self::$db->quote($nuevoEstado) . "
@@ -111,9 +101,7 @@ class Productos extends ActiveRecord {
         return $resultado > 0;
     }
 
-    /**
-     * VALIDACIONES PERSONALIZADAS
-     */
+    //VALIDACIONES PERSONALIZADAS
     public function validar() {
         $errores = [];
 
@@ -140,9 +128,7 @@ class Productos extends ActiveRecord {
         return $errores;
     }
 
-    /**
-     * LIMPIEZA DE DATOS ANTES DE GUARDAR
-     */
+    //LIMPIEZA DE DATOS ANTES DE GUARDAR
     public function limpiarDatos() {
         $this->prod_nombre = trim($this->prod_nombre);
         $this->prod_cantidad = (int)$this->prod_cantidad;
