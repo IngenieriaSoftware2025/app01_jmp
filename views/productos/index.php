@@ -53,13 +53,13 @@
                                 </div>
 
                                 <div class="col-auto">
-                                    <button class="btn btn-warning d-none" type="button" id="BtnModificar">
+                                    <button class="btn btn-warning" type="button" id="BtnModificar" style="display: none;">
                                         <i class="bi bi-pencil me-1"></i>Modificar
                                     </button>
                                 </div>
 
                                 <div class="col-auto">
-                                    <button class="btn btn-secondary" type="reset" id="BtnLimpiar">
+                                    <button class="btn btn-secondary" type="button" id="BtnLimpiar">
                                         <i class="bi bi-x-circle me-1"></i>Limpiar
                                     </button>
                                 </div>
