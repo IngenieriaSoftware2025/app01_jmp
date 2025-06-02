@@ -57,7 +57,7 @@
     <footer class="bg-light py-3 mt-auto">
         <div class="container text-center">
             <p class="text-muted mb-0 small">
-                Lista de Compras de María &copy; <?= date('Y') ?>
+            Carrito de compras&copy; <?= date('Y') ?>
             </p>
         </div>
     </footer>

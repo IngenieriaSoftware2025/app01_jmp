@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 // ELEMENTOS DEL DOM
 const formulario = document.getElementById('FormClientes');
 const btnGuardar = document.getElementById('BtnGuardar');
+const btnModificar = document.getElementById('BtnModificar');
 const btnLimpiar = document.getElementById('BtnLimpiar');
 let modoEdicion = false;
 
@@ -17,6 +18,11 @@ function configurarEventos() {
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         guardarCliente();
+    });
+    
+    // Evento para modificar cliente
+    btnModificar.addEventListener('click', function() {
+        modificarCliente();
     });
     
     btnLimpiar.addEventListener('click', limpiarFormulario);
@@ -155,14 +161,81 @@ window.editarCliente = function(id, nombre) {
     document.getElementById('cliente_id').value = id;
     document.getElementById('cliente_nombre').value = nombre;
     
-    // Cambiar texto del botón
-    btnGuardar.textContent = 'Actualizar';
-    btnGuardar.classList.remove('btn-primary');
-    btnGuardar.classList.add('btn-warning');
+    // Cambiar visibilidad de botones
+    btnGuardar.style.display = 'none';
+    btnModificar.style.display = 'inline-block';
     
     // Scroll al formulario
     formulario.scrollIntoView({ behavior: 'smooth' });
 };
+
+// MODIFICAR CLIENTE
+async function modificarCliente() {
+    try {
+        // Validar formulario antes de enviar
+        if (!validarFormulario()) {
+            return;
+        }
+        
+        // Deshabilitar botón para evitar múltiples envíos
+        btnModificar.disabled = true;
+        
+        const datos = new FormData(formulario);
+        
+        // Mostrar indicador de carga
+        Swal.fire({
+            title: 'Modificando...',
+            text: 'Por favor espera',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        const respuesta = await fetch('/app01_jmp/clientes/guardarAPI', {
+            method: 'POST',
+            body: datos
+        });
+        
+        if (!respuesta.ok) {
+            throw new Error(`Error HTTP: ${respuesta.status}`);
+        }
+        
+        const resultado = await respuesta.json();
+        
+        if (resultado.resultado) {
+            // Cerrar indicador de carga
+            Swal.close();
+            
+            // Mostrar mensaje de éxito
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: resultado.mensaje
+            });
+            
+            // Limpiar formulario y recargar clientes
+            limpiarFormulario();
+            cargarClientes();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: resultado.mensaje || 'Error desconocido'
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un error al modificar el cliente: ' + error.message
+        });
+    } finally {
+        btnModificar.disabled = false;
+    }
+}
 
 // ELIMINAR CLIENTE
 window.eliminarCliente = async function(id) {
@@ -250,8 +323,7 @@ function limpiarFormulario() {
     document.getElementById('cliente_id').value = '';
     modoEdicion = false;
     
-    // Restaurar botón
-    btnGuardar.textContent = 'Guardar';
-    btnGuardar.classList.remove('btn-warning');
-    btnGuardar.classList.add('btn-primary');
+    // Restaurar botones
+    btnGuardar.style.display = 'inline-block';
+    btnModificar.style.display = 'none';
 }
