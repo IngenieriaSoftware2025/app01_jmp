@@ -16,7 +16,11 @@ class ProductoController
 
     public static function guardarAPI()
     {
+        
+        
+        
         header('Content-Type: application/json');
+
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['resultado' => false, 'mensaje' => 'Método no permitido']);

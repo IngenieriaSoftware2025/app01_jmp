@@ -30,3 +30,36 @@ INSERT INTO categorias (cat_nombre) VALUES ('Hogar');
 INSERT INTO prioridades (pri_nombre) VALUES ('Alta');
 INSERT INTO prioridades (pri_nombre) VALUES('Media');
 INSERT INTO prioridades (pri_nombre) VALUES('Baja');
+
+
+-- Agregar campos a productos existente
+ALTER TABLE productos ADD precio DECIMAL(10,2) DEFAULT 0.00;
+ALTER TABLE productos ADD stock INTEGER DEFAULT 0;
+
+-- Tabla clientes
+CREATE TABLE clientes (
+    cliente_id SERIAL PRIMARY KEY,
+    cliente_nombre VARCHAR(100) NOT NULL
+);
+
+-- Tabla facturas
+CREATE TABLE facturas (
+    factura_id SERIAL PRIMARY KEY,
+    cliente_id INTEGER NOT NULL,
+    factura_total DECIMAL(10,2) DEFAULT 0.00
+);
+
+-- Tabla detalle_factura
+CREATE TABLE detalle_factura (
+    detalle_id SERIAL PRIMARY KEY,
+    factura_id INTEGER NOT NULL,
+    prod_id INTEGER NOT NULL,
+    detalle_cantidad INTEGER NOT NULL,
+    detalle_precio DECIMAL(10,2) NOT NULL,
+    detalle_subtotal DECIMAL(10,2) NOT NULL
+);
+
+-- Datos iniciales
+INSERT INTO clientes (cliente_nombre) VALUES ('Juan Pérez');
+INSERT INTO clientes (cliente_nombre) VALUES ('María García');
+INSERT INTO clientes (cliente_nombre) VALUES ('Carlos López');
