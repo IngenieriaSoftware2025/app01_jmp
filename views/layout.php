@@ -40,6 +40,11 @@
                             <i class="bi bi-people me-1"></i>Clientes
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/app01_jmp/carrito">
+                            <i class="bi bi-cart me-1"></i>Carrito
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -57,7 +62,7 @@
     <footer class="bg-light py-3 mt-auto">
         <div class="container text-center">
             <p class="text-muted mb-0 small">
-            Carrito de compras&copy; <?= date('Y') ?>
+                Carrito de compras&copy; <?= date('Y') ?>
             </p>
         </div>
     </footer>

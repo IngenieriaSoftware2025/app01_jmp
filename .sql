@@ -17,6 +17,8 @@ CREATE TABLE productos (
     cat_id INTEGER NOT NULL,
     pri_id INTEGER NOT NULL,
     comprado SMALLINT DEFAULT 0,
+    stock INTEGER DEFAULT 0,
+
     FOREIGN KEY (cat_id) REFERENCES categorias(cat_id),
     FOREIGN KEY (pri_id) REFERENCES prioridades(pri_id)
 );

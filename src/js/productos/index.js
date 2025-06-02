@@ -99,7 +99,9 @@ function mostrarProductos(productos) {
                             <div class="card-body">
                                 <h6 class="card-title">${producto.prod_nombre}</h6>
                                 <p class="card-text mb-2">
-                                    Cantidad: ${producto.prod_cantidad}
+                                    Cantidad: ${producto.prod_cantidad}<br>
+                                    <strong>Precio: Q. ${parseFloat(producto.precio || 0).toFixed(2)}</strong><br>
+                                    <strong>Stock: ${producto.stock || 0}</strong>
                                 </p>
                                 <span class="badge bg-${obtenerColorPrioridad(producto.pri_nombre)} mb-3">
                                     ${producto.pri_nombre}
@@ -143,7 +145,9 @@ function mostrarProductos(productos) {
                         <div class="card-body">
                             <h6 class="card-title text-decoration-line-through">${producto.prod_nombre}</h6>
                             <p class="card-text mb-2">
-                                Cantidad: ${producto.prod_cantidad} - ${producto.cat_nombre}
+                                Cantidad: ${producto.prod_cantidad} - ${producto.cat_nombre}<br>
+                                Precio: Q. ${parseFloat(producto.precio || 0).toFixed(2)}<br>
+                                Stock: ${producto.stock || 0}
                             </p>
                             <div class="d-flex justify-content-between mt-3">
                                 <button class="btn btn-sm btn-secondary" onclick="marcarComprado(${producto.prod_id}, 0)">
@@ -270,6 +274,8 @@ function validarFormulario() {
     const cantidad = document.getElementById('prod_cantidad').value;
     const categoria = document.getElementById('cat_id').value;
     const prioridad = document.getElementById('pri_id').value;
+    const precio = parseFloat(document.getElementById('precio').value);
+    const stock = parseInt(document.getElementById('stock').value);
     
     if (nombre === '') {
         Swal.fire('Error', 'El nombre del producto es obligatorio', 'error');
@@ -288,6 +294,16 @@ function validarFormulario() {
     
     if (prioridad === '') {
         Swal.fire('Error', 'Debe seleccionar una prioridad', 'error');
+        return false;
+    }
+    
+    if (precio < 0) {
+        Swal.fire('Error', 'El precio no puede ser negativo', 'error');
+        return false;
+    }
+    
+    if (stock < 0) {
+        Swal.fire('Error', 'El stock no puede ser negativo', 'error');
         return false;
     }
     
@@ -331,6 +347,8 @@ window.editarProducto = async function(id) {
         document.getElementById('prod_cantidad').value = producto.prod_cantidad;
         document.getElementById('cat_id').value = producto.cat_id;
         document.getElementById('pri_id').value = producto.pri_id;
+        document.getElementById('precio').value = parseFloat(producto.precio || 0).toFixed(2);
+        document.getElementById('stock').value = producto.stock || 0;
         
         // Cambiar visibilidad de botones
         btnGuardar.style.display = 'none';
@@ -443,7 +461,6 @@ window.marcarComprado = async function(id, valor) {
 };
 
 // ELIMINAR PRODUCTO
-// ELIMINAR PRODUCTO
 window.eliminarProducto = async function(id) {
     try {
         const confirmacion = await Swal.fire({
@@ -469,10 +486,6 @@ window.eliminarProducto = async function(id) {
             }
         });
 
-        // Imprimir datos para depuración
-        console.log('ID a eliminar:', id);
-        
-        // Intentar hacer una petición GET directa con el ID en la URL
         const respuesta = await fetch(`/app01_jmp/productos/eliminar?prod_id=${id}`, {
             method: 'GET',
             headers: {
@@ -480,20 +493,12 @@ window.eliminarProducto = async function(id) {
             }
         });
         
-        // Imprimir respuesta para depuración
-        console.log('Status:', respuesta.status);
-        console.log('Content-Type:', respuesta.headers.get('content-type'));
-        
-        // Obtener texto de respuesta para diagnóstico
         const textoRespuesta = await respuesta.text();
-        console.log('Respuesta texto completo:', textoRespuesta);
         
-        // Intentar parsear como JSON
         let resultado;
         try {
             resultado = JSON.parse(textoRespuesta);
             
-            // Procesar respuesta JSON
             Swal.close();
             
             if (resultado.resultado || resultado.codigo === 1) {
@@ -512,11 +517,12 @@ window.eliminarProducto = async function(id) {
     }
 };
 
-
 // LIMPIAR FORMULARIO
 function limpiarFormulario() {
     formulario.reset();
     document.getElementById('prod_id').value = '';
+    document.getElementById('precio').value = '0.00';
+    document.getElementById('stock').value = '0';
     modoEdicion = false;
     
     // Restaurar botones

@@ -12,7 +12,9 @@ class Productos extends ActiveRecord {
         'prod_cantidad',
         'cat_id',
         'pri_id',
-        'comprado'
+        'comprado',
+        'precio',
+        'stock'
     ];
     
     public static $idTabla = 'prod_id';
@@ -24,6 +26,8 @@ class Productos extends ActiveRecord {
     public $cat_id;
     public $pri_id;
     public $comprado;
+    public $precio;
+    public $stock;
 
     //CONSTRUCTOR - INICIALIZAR PROPIEDADES
     public function __construct($args = []) {
@@ -33,6 +37,8 @@ class Productos extends ActiveRecord {
         $this->cat_id = $args['cat_id'] ?? '';
         $this->pri_id = $args['pri_id'] ?? '';
         $this->comprado = $args['comprado'] ?? 0;
+        $this->precio = $args['precio'] ?? 0.00;   
+        $this->stock = $args['stock'] ?? 0;
     }
     
     //CONSULTAR PRODUCTOS CON INFORMACIÓN DE CATEGORÍAS Y PRIORIDADES
@@ -44,6 +50,8 @@ class Productos extends ActiveRecord {
                     p.cat_id,
                     p.pri_id,
                     p.comprado,
+                    p.precio,
+                    p.stock,
                     c.cat_nombre,
                     pr.pri_nombre
                   FROM productos p
@@ -55,7 +63,7 @@ class Productos extends ActiveRecord {
     }
 
     //Verificar si ya existe un producto con el mismo nombre en la misma categoría
-    public static function existeProducto($nombre, $categoria_id) {
+    public static function existeProducto($nombre, $categoria_id, $stock) {
         $query = "SELECT COUNT(*) as total 
                   FROM " . static::$tabla . " 
                   WHERE TRIM(prod_nombre) = " . self::$db->quote(trim($nombre)) . "
@@ -74,6 +82,8 @@ class Productos extends ActiveRecord {
                     p.cat_id,
                     p.pri_id,
                     p.comprado,
+                    p.precio, 
+                    p.stock,
                     c.cat_nombre,
                     pr.pri_nombre
                   FROM productos p
@@ -135,5 +145,7 @@ class Productos extends ActiveRecord {
         $this->cat_id = (int)$this->cat_id;
         $this->pri_id = (int)$this->pri_id;
         $this->comprado = (int)$this->comprado;
+        $this->precio = (float)$this->precio;
+        $this->stock = (int)$this->stock;
     }
 }

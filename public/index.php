@@ -5,6 +5,7 @@ use Controllers\AppController;
 use Controllers\CategoriaController;
 use Controllers\ProductoController;
 use Controllers\ClienteController;
+use Controllers\CarritoController;
 use MVC\Router;
 
 $router = new Router();
@@ -31,6 +32,13 @@ $router->get('/clientes', [ClienteController::class, 'renderizarPagina']);
 $router->post('/clientes/guardarAPI', [ClienteController::class, 'guardarAPI']);
 $router->post('/clientes/eliminarAPI', [ClienteController::class, 'eliminarAPI']);
 $router->get('/clientes/obtenerAPI', [ClienteController::class, 'obtenerAPI']);
+
+// RUTAS PARA CARRITO DE COMPRAS
+$router->get('/carrito', [CarritoController::class, 'renderizarPagina']);
+$router->get('/carrito/obtenerProductosAPI', [CarritoController::class, 'obtenerProductosAPI']);
+$router->get('/carrito/obtenerClientesAPI', [CarritoController::class, 'obtenerClientesAPI']);
+$router->post('/carrito/guardarCompraAPI', [CarritoController::class, 'guardarCompraAPI']);
+$router->get('/carrito/obtenerFacturasAPI', [CarritoController::class, 'obtenerFacturasAPI']);
 
 // VALIDAR RUTAS
 $router->comprobarRutas();

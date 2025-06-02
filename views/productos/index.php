@@ -24,20 +24,34 @@
                             </div>
 
                             <div class="row mb-3 justify-content-center">
-                                <div class="col-lg-6">
-                                    <label for="cat_id" class="form-label">CATEGORÍA</label>
-                                    <select name="cat_id" class="form-select" id="cat_id" required>
-                                        <option value="" class="text-center"> -- SELECCIONE CATEGORÍA -- </option>
-                                        <!-- Se cargará dinámicamente con JavaScript -->
-                                    </select>
+                                <div class="col-lg-4">
+                                    <label for="precio" class="form-label">PRECIO</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Q.</span>
+                                        <input type="number" class="form-control" id="precio" name="precio" min="0" step="0.01" value="0.00" placeholder="15.50" required>
+                                    </div>
                                 </div>
-                                <div class="col-lg-6">
+                                <div class="col-lg-4">
+                                    <label for="stock" class="form-label">STOCK</label>
+                                    <input type="number" class="form-control" id="stock" name="stock" min="0" value="0" placeholder="Ej: 10" required>
+                                </div>
+                                <div class="col-lg-4">
                                     <label for="pri_id" class="form-label">PRIORIDAD</label>
                                     <select name="pri_id" class="form-select" id="pri_id" required>
                                         <option value="" class="text-center"> -- SELECCIONE PRIORIDAD -- </option>
                                         <option value="1">Alta</option>
                                         <option value="2">Media</option>
                                         <option value="3">Baja</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3 justify-content-center">
+                                <div class="col-lg-12">
+                                    <label for="cat_id" class="form-label">CATEGORÍA</label>
+                                    <select name="cat_id" class="form-select" id="cat_id" required>
+                                        <option value="" class="text-center"> -- SELECCIONE CATEGORÍA -- </option>
+                                        <!-- Se cargará dinámicamente con JavaScript -->
                                     </select>
                                 </div>
                             </div>

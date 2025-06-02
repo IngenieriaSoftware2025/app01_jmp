@@ -16,11 +16,7 @@ class ProductoController
 
     public static function guardarAPI()
     {
-        
-        
-        
         header('Content-Type: application/json');
-
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['resultado' => false, 'mensaje' => 'Método no permitido']);
@@ -28,10 +24,12 @@ class ProductoController
         }
 
         // Sanitizar y validar datos
-        $prod_nombre = isset($_POST['prod_nombre']) ? htmlspecialchars(trim($_POST['prod_nombre'])) : '';
+        $prod_nombre = isset($_POST['prod_nombre']) ? ucwords(strtolower(trim(htmlspecialchars($_POST['prod_nombre'])))) : '';
         $prod_cantidad = isset($_POST['prod_cantidad']) ? (int)$_POST['prod_cantidad'] : 0;
         $cat_id = isset($_POST['cat_id']) ? (int)$_POST['cat_id'] : 0;
         $pri_id = isset($_POST['pri_id']) ? (int)$_POST['pri_id'] : 0;
+        $precio = isset($_POST['precio']) ? (float)$_POST['precio'] : 0.00;
+        $stock = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
 
         // Validaciones básicas
         if (empty($prod_nombre)) {
@@ -50,6 +48,14 @@ class ProductoController
             echo json_encode(['resultado' => false, 'mensaje' => 'Debe seleccionar una prioridad']);
             return;
         }
+        if ($precio < 0) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'El precio no puede ser negativo']);
+            return;
+        }
+        if ($stock < 0) {
+            echo json_encode(['resultado' => false, 'mensaje' => 'El stock no puede ser negativo']);
+            return;
+        }
         
         try {
             // Verificar si es una actualización
@@ -60,12 +66,14 @@ class ProductoController
                 $producto = Productos::find($prod_id);
 
                 if ($producto) {
-                    // Actualizar datos usando sincronizar en lugar de asignación directa
+                    // Actualizar datos usando sincronizar
                     $producto->sincronizar([
                         'prod_nombre' => $prod_nombre,
                         'prod_cantidad' => $prod_cantidad,
                         'cat_id' => $cat_id,
-                        'pri_id' => $pri_id
+                        'pri_id' => $pri_id,
+                        'precio' => $precio,
+                        'stock' => $stock
                     ]);
 
                     // Guardar cambios
@@ -81,13 +89,15 @@ class ProductoController
                 }
             }
 
-            // Crear producto con datos validados (código existente)
+            // Crear producto con datos validados
             $producto = new Productos([
                 'prod_nombre' => $prod_nombre,
                 'prod_cantidad' => $prod_cantidad,
                 'cat_id' => $cat_id,
                 'pri_id' => $pri_id,
-                'comprado' => 0
+                'comprado' => 0,
+                'precio' => $precio,
+                'stock' => $stock
             ]);
 
             // Guardar el producto
@@ -99,7 +109,6 @@ class ProductoController
                 'mensaje' => 'El producto ha sido agregado correctamente'
             ]);
         } catch (Exception $e) {
-            // Si ocurre un error...
             // Si ocurre un error, enviamos una respuesta de error en formato JSON
             echo json_encode([
                 'resultado' => false,
@@ -111,6 +120,8 @@ class ProductoController
 
     public static function obtenerAPI()
     {
+        header('Content-Type: application/json');
+        
         try {
             $productos = Productos::consultarProductos();
             echo json_encode($productos);
@@ -126,7 +137,6 @@ class ProductoController
 
     public static function eliminarAPI()
     {
-        // Establecer encabezados para JSON
         header('Content-Type: application/json');
 
         // Verificar que se haya enviado el ID (por GET)
@@ -150,6 +160,17 @@ class ProductoController
                 return;
             }
 
+            // Verificar que no tenga stock antes de eliminar usando consulta directa
+            $stockActual = self::validarStockProducto($id);
+            
+            if ($stockActual > 0) {
+                echo json_encode([
+                    'resultado' => false, 
+                    'mensaje' => "No se puede eliminar el producto. Tiene stock disponible: $stockActual unidades"
+                ]);
+                return;
+            }
+
             $resultado = $producto->eliminar();
 
             echo json_encode([
@@ -167,6 +188,8 @@ class ProductoController
 
     public static function marcarAPI()
     {
+        header('Content-Type: application/json');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = filter_var($_POST['prod_id'], FILTER_VALIDATE_INT);
             $valor = filter_var($_POST['valor'], FILTER_VALIDATE_INT);
@@ -211,6 +234,25 @@ class ProductoController
                     'detalle' => $e->getMessage(),
                 ]);
             }
+        }
+    }
+
+    /**
+     * Validar stock de un producto usando consulta SQL directa
+     */
+    private static function validarStockProducto($prod_id)
+    {
+        try {
+            $consulta = "SELECT stock FROM productos WHERE prod_id = " . (int)$prod_id;
+            $resultado = Productos::consultarSQL($consulta);
+            
+            if (!empty($resultado)) {
+                return (int)$resultado[0]->stock;
+            }
+            
+            return 0;
+        } catch (Exception $e) {
+            return 0;
         }
     }
 }
