@@ -105,10 +105,6 @@ class ProductoController
         }
     }
 
-
-
-
-
     public static function obtenerAPI()
     {
         try {
