@@ -17,6 +17,74 @@ document.addEventListener('DOMContentLoaded', function() {
     configurarEventos();
     cargarFacturasRecientes();
 });
+// MODIFICAR FACTURA
+window.modificarFactura = async function(facturaId) {
+    try {
+        // Mostrar loading
+        Swal.fire({
+            title: 'Cargando factura...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Obtener detalles de la factura
+        const respuesta = await fetch(`/app01_jmp/carrito/obtenerDetalleFacturaAPI?factura_id=${facturaId}`);
+        
+        if (!respuesta.ok) {
+            throw new Error(`Error HTTP: ${respuesta.status}`);
+        }
+
+        const resultado = await respuesta.json();
+
+        Swal.close();
+
+        if (!resultado.resultado) {
+            Swal.fire('Error', resultado.mensaje, 'error');
+            return;
+        }
+
+        // Limpiar carrito actual
+        carrito = [];
+        
+        // Seleccionar el cliente
+        clienteSelect.value = resultado.factura.cliente_id;
+        
+        // Cargar productos en el carrito
+        resultado.detalles.forEach(detalle => {
+            carrito.push({
+                prod_id: detalle.prod_id,
+                prod_nombre: detalle.prod_nombre,
+                precio: parseFloat(detalle.detalle_precio),
+                cantidad: parseInt(detalle.detalle_cantidad),
+                subtotal: parseFloat(detalle.detalle_subtotal)
+            });
+        });
+
+        // Actualizar vista del carrito
+        actualizarVistaCarrito();
+        verificarEstadoBoton();
+
+        // Cambiar el botón para indicar que es una modificación
+        btnGuardarCompra.textContent = 'Actualizar Compra';
+        btnGuardarCompra.dataset.facturaId = facturaId;
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Factura cargada',
+            text: `Factura #${facturaId} lista para modificar`,
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire('Error', 'No se pudo cargar la factura: ' + error.message, 'error');
+    }
+};
 
 // CONFIGURAR EVENTOS
 function configurarEventos() {
@@ -182,28 +250,25 @@ window.eliminarDelCarrito = function(index) {
 
 // LIMPIAR CARRITO
 function limpiarCarrito() {
-    if (carrito.length === 0) {
+    if (carrito.length === 0 && !btnGuardarCompra.dataset.facturaId) {
         Swal.fire('Info', 'El carrito ya está vacío', 'info');
         return;
     }
 
+    const esEdicion = btnGuardarCompra.dataset.facturaId;
+    const titulo = esEdicion ? '¿Cancelar edición?' : '¿Limpiar carrito?';
+    const texto = esEdicion ? 'Se cancelará la edición de la factura' : 'Se eliminarán todos los productos del carrito';
+
     Swal.fire({
-        title: '¿Limpiar carrito?',
-        text: 'Se eliminarán todos los productos del carrito',
+        title: titulo,
+        text: texto,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Sí, limpiar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            carrito = [];
-            actualizarVistaCarrito();
-            verificarEstadoBoton();
-            
-            // Limpiar todos los inputs de cantidad
-            document.querySelectorAll('.cantidad-input').forEach(input => {
-                input.value = 0;
-            });
+            limpiarCarritoCompleto();
         }
     });
 }
@@ -228,10 +293,14 @@ async function guardarCompra() {
         return;
     }
 
+    // Verificar si es una actualización o nueva compra
+    const esActualizacion = btnGuardarCompra.dataset.facturaId;
+    const tituloOperacion = esActualizacion ? 'Actualizando compra...' : 'Guardando compra...';
+
     try {
         // Mostrar loading
         Swal.fire({
-            title: 'Guardando compra...',
+            title: tituloOperacion,
             text: 'Por favor espere',
             allowOutsideClick: false,
             showConfirmButton: false,
@@ -244,8 +313,15 @@ async function guardarCompra() {
         datos.append('cliente_id', clienteSelect.value);
         datos.append('productos', JSON.stringify(carrito));
         datos.append('total', totalCarrito.toFixed(2));
+        
+        // Si es actualización, agregar el ID de la factura
+        if (esActualizacion) {
+            datos.append('factura_id', btnGuardarCompra.dataset.facturaId);
+        }
 
-        const respuesta = await fetch('/app01_jmp/carrito/guardarCompraAPI', {
+        const url = esActualizacion ? '/app01_jmp/carrito/actualizarCompraAPI' : '/app01_jmp/carrito/guardarCompraAPI';
+
+        const respuesta = await fetch(url, {
             method: 'POST',
             body: datos
         });
@@ -259,23 +335,17 @@ async function guardarCompra() {
         Swal.close();
 
         if (resultado.resultado) {
+            const mensajeExito = esActualizacion ? 'Compra actualizada correctamente' : 'Compra guardada correctamente';
+            
             Swal.fire({
                 icon: 'success',
-                title: 'Compra guardada',
-                text: `Factura #${resultado.factura_id} creada correctamente`,
+                title: mensajeExito,
+                text: `Factura #${resultado.factura_id}`,
                 confirmButtonText: 'OK'
             }).then(() => {
                 // Limpiar formulario
-                carrito = [];
-                clienteSelect.value = '';
-                actualizarVistaCarrito();
-                verificarEstadoBoton();
+                limpiarCarritoCompleto();
                 
-                // Limpiar inputs de cantidad
-                document.querySelectorAll('.cantidad-input').forEach(input => {
-                    input.value = 0;
-                });
-
                 // Recargar facturas recientes
                 cargarFacturasRecientes();
             });
@@ -285,8 +355,25 @@ async function guardarCompra() {
 
     } catch (error) {
         console.error('Error:', error);
-        Swal.fire('Error', 'Ocurrió un error al guardar la compra: ' + error.message, 'error');
+        Swal.fire('Error', 'Ocurrió un error al procesar la compra: ' + error.message, 'error');
     }
+}
+
+// LIMPIAR CARRITO COMPLETO (incluyendo modo edición)
+function limpiarCarritoCompleto() {
+    carrito = [];
+    clienteSelect.value = '';
+    actualizarVistaCarrito();
+    verificarEstadoBoton();
+    
+    // Limpiar inputs de cantidad
+    document.querySelectorAll('.cantidad-input').forEach(input => {
+        input.value = 0;
+    });
+
+    // Restaurar botón a modo normal
+    btnGuardarCompra.textContent = 'Guardar Compra';
+    delete btnGuardarCompra.dataset.facturaId;
 }
 
 // CARGAR FACTURAS RECIENTES
@@ -303,12 +390,21 @@ async function cargarFacturasRecientes() {
         let html = '';
         facturas.slice(0, 5).forEach(factura => {
             html += `
-                <div class="border-bottom pb-1 mb-1">
-                    <div class="d-flex justify-content-between">
-                        <small><strong>#${factura.factura_id}</strong></small>
-                        <small>Q. ${parseFloat(factura.factura_total).toFixed(2)}</small>
+                <div class="border-bottom pb-2 mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <small><strong>#${factura.factura_id}</strong></small>
+                                <small>Q. ${parseFloat(factura.factura_total).toFixed(2)}</small>
+                            </div>
+                            <small class="text-muted">${factura.cliente_nombre}</small>
+                        </div>
                     </div>
-                    <small class="text-muted">${factura.cliente_nombre}</small>
+                    <div class="mt-1">
+                        <button class="btn btn-sm btn-outline-primary" onclick="modificarFactura(${factura.factura_id})">
+                            <i class="bi bi-pencil"></i> Modificar
+                        </button>
+                    </div>
                 </div>
             `;
         });

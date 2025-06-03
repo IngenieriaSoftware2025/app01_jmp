@@ -39,6 +39,8 @@ $router->get('/carrito/obtenerProductosAPI', [CarritoController::class, 'obtener
 $router->get('/carrito/obtenerClientesAPI', [CarritoController::class, 'obtenerClientesAPI']);
 $router->post('/carrito/guardarCompraAPI', [CarritoController::class, 'guardarCompraAPI']);
 $router->get('/carrito/obtenerFacturasAPI', [CarritoController::class, 'obtenerFacturasAPI']);
-
+$router->get('/carrito/obtenerDetalleFacturaAPI', [CarritoController::class, 'obtenerDetalleFacturaAPI']);
+$router->post('/carrito/actualizarCompraAPI', [CarritoController::class, 'actualizarCompraAPI']);
+$router->get('/carrito/obtenerDetalleFacturaAPI', [CarritoController::class, 'obtenerDetalleFacturaAPI']);
 // VALIDAR RUTAS
 $router->comprobarRutas();
